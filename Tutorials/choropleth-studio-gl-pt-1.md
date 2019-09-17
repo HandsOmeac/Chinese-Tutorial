@@ -1,235 +1,111 @@
----
-title: "Make a choropleth map, part 1: create a style"
-description: Upload custom data to Mapbox Studio, add it to a template style, and use filters to style your data.
-thumbnail: choroplethStudioGlPt1
-level: 1
-topics:
-- uploads
-- map design
-- web apps
-language:
-- No code
-prependJs:
-  - "import Icon from '@mapbox/mr-ui/icon';"
-  - "import AppropriateImage from '../../components/appropriate-image';"
-  - "import { PRODUCTION_TOKEN, VERSION_MAPBOXGLJS } from '../../constants'"
-  - "import DemoIframe from '@mapbox/dr-ui/demo-iframe';"
-contentType: tutorial
----
+绘制等值线地图，第1部分：创建样式
 
-One way to show data distribution on a map is with a [**choropleth**](https://en.wikipedia.org/wiki/Choropleth_map), a thematic map in which areas are shaded based on a particular value. In this guide, you will use Mapbox Studio and Mapbox GL JS to make a map of US states showing population density. (If you are familiar with [Leaflet](/help/glossary/leaflet), this map [may look familiar](http://leafletjs.com/examples/choropleth/)!)
+一种方法在地图上显示数据分布的是使用等值线，一种基于特定值对区域进行着色的主题地图。在本指南中，您将使用Mapbox Studio和Mapbox GL JS绘制一张显示人口密度的美国各州地图。（如果您熟悉Leaflet，这张地图可能看起来会很熟悉！）
 
-{{
-  <DemoIframe src="/help/demos/choropleth-studio-gl/demo-five.html" />
-}}
+准备开始
 
-## Getting started
+在本指南中，您将使用两个MapBox工具：
+Mapbox Studio用于添加数据和创建地图样式
+Mapbox GL JS为地图添加交互并在网页上展示。
 
-You will be using two Mapbox tools throughout this guide:
+下载数据
 
-- [Mapbox Studio](/help/glossary/mapbox-studio) to add your data and create your map style.
-- [Mapbox GL JS](/help/glossary/mapbox-gl-js) to add interactivity to your map and publish it on the web.
+对于本指南，您需要下载一些数据。这个GeoJSON文件是从Leaflet的等值线教程引用来的，包含了美国各州人口密度的数据。
 
-## Download the data
+上传您的数据
 
-For this guide, you will need to download some [**data**](/help/demos/choropleth-studio-gl/stateData.geojson). This GeoJSON file is borrowed from [the Leaflet choropleth tutorial](http://leafletjs.com/examples/choropleth/) and contains data on population density across US states.
+为了将人口密度数据添加为Mapbox Studio中的一个样式，您需要将其上传到您的帐户。请去到您的Mapbox Studio中的Tilesets页面上传数据。
 
-## Upload your data
+在您的Tilesets页面上，点击新建Tilesets按钮。选择statedata.geojson文件并将其上传到您的帐户。
 
-To add the population density data to a style in Mapbox Studio, you need to upload it to your account. Go to your [**Tilesets** page](https://studio.mapbox.com/tilesets) in Mapbox Studio to upload your data.
+上传完成后，单击文件名旁边的箭头打开其信息页。
 
-On your Tilesets page, click the **New tileset** button. Select the file `stateData.geojson` and upload it to your account.
+检查tileset
 
-When the upload is complete, click on the arrow next to the filename to open its information page.
+当您将矢量数据上传到Mapbox帐户时，我们的服务器会将其转换为矢量平铺集，以便可以在Mapbox Studio样式编辑器和Mapbox GL JS中快速高效地呈现它。tileset信息页展示了有关从您上传的数据创建的tileset的一些有用信息。
 
-{{
-  <AppropriateImage
-    imageId="choroplethStudioGlPt1DataUploadSuccess"
-    alt="upload dialog leading to your tileset's information page"
-  />
-}}
 
-## Inspect the tileset
 
-When you upload vector data to your Mapbox account, our servers convert it to a [vector tileset](/help/glossary/tileset) so it can be rendered quickly and efficiently in the Mapbox Studio style editor and with Mapbox GL JS. The tileset information page shows some useful information about the tileset that was created from your uploaded data.
+在图的中间，您可以看到原始geojson文件的属性：density和name。上传的tileset保留了原始数据文件的属性，在为tileset添加样式规则时可以使用这些属性。
 
-{{
-  <AppropriateImage
-    imageId="choroplethStudioGlPt1StatedataPage"
-    alt="new state data tileset information page"
-  />
-}}
+Tileset ID是此tileset的唯一标识符。
 
-- In the center, you can see the properties from the original GeoJSON file: **density** and **name**. The uploaded tileset maintains the properties from the original data file, which you can use when adding style rules for the tileset.
-- The **tileset ID** is the unique identifier for this tileset.
-- **Format**, **Type**, **Size**, and **Bounds** provide general information about the tileset.
-- **Zoom extent** tells you the zoom levels at which tiles were generated for your uploaded data. Don't worry about this number. Vector tiles are comprised of vector data and can be [overzoomed](/help/glossary/overzoom/) and styled up to zoom level 22.
+Format, Type, Size, 和 Bounds提供了关于此tileset的基本信息。
 
-## Create a new style
 
-After you've inspected your data, it's time to create a new style so you can put it on the map! Go to your [Styles page](https://studio.mapbox.com). Click the **New style** button. Find the _Basic Template_ style and click **Customize Basic Template**.
+创建一个新样式
 
-Excellent! Welcome to the Mapbox Studio style editor. This is where you will create your map style.
+检查完数据后，是时候创建一个新样式了以便您可以将其放到地图上！跳转至样式页。单击新建样式按钮。找到基本样式模板，然后点击自定义基本模板。
 
-{{
-  <AppropriateImage
-    imageId="choroplethStudioGlPt1NoData"
-    alt="Mapbox Studio style editor showing default Basic style"
-  />
-}}
+太棒了！欢迎使用Mapbox Studio样式编辑器。这是您要创建您的地图样式的地方。
 
-Rename the style so that you can find it later. Click into the title field in the upper left side of the screen to change the title from Basic Template to Population.
+重命名样式方便之后可以找到它。单击屏幕左上角的标题区域，将标题从Basic Template更改为Population。
 
-_If this is your first time in the style editor, read the [Mapbox Studio Manual](https://www.mapbox.com/studio-manual/reference/styles/) for more information on getting started._
+如果这是您第一次使用样式编辑器，请阅读mapbox studio手册以了解有关入门的详细信息。
 
-## Add a new layer
+添加新层
 
-To add and style the population density data, you will need to add a new layer to the map. At the top of the layer panel, click **+ Add layer**.
+要添加人口密度数据并设置其样式，您需要向地图中添加新图层。在层面板的顶部，点击+ Add layer.
 
-{{
-  <AppropriateImage
-    imageId="choroplethStudioGlPt1NewLayer"
-    alt="Mapbox Studio add new layer"
-  />
-}}
+编辑器现在以x-ray模式显示地图。X-ray模式显示了添加到样式源中的所有数据，不管是否有图层来设置样式。
 
-The editor is now showing your map in x-ray mode. X-ray mode shows all the data in the sources added to the style, regardless of whether there is a layer to style it.
+在新建层面板中，查看statedata源的数据源列表。单击tileset，然后选择源图层作为此新样式图层的源。
 
-In the _New layer_ panel, look in the list of _Data sources_ for the `statedata` source. Click the tileset and then select the source layer as the source for this new style layer.
+默认的基本地图视图中心点不是美国。Mapbox Studio识别到您上传的数据集中在不同的位置，因此它会显示 “此tileset在您的地图视图中不可用” 的提示信息。点击“Go to data”，然后地图视图将重新将中心点设置为美国。
 
-The default Basic map view is not centered on the United States. Mapbox Studio recognizes that the data you have uploaded is focused on a different location, so it displays the message _"This tileset isn't available from your map view."_ Click **Go to data**, and the map view will refocus on the United States.
+新图层将在X射线地图上高亮显示。
 
-Your new layer will be highlighted on the x-ray map.
+点击Style选项卡，地图将切换回显示新图层的样式模式。您将在地图上看到默认样式的州数据（黑色，不透明度为100%）。
 
-{{
-  <AppropriateImage
-    imageId="choroplethStudioGlPt1StateDataXray"
-    alt="Mapbox Studio set data dialog showing x-ray mode"
-  />
-}}
+您可以通过点击面板顶部的图层名称重命名图层。重命名新图层州数据。
 
-Click the **Style** tab and the map will switch back to style mode displaying your new layer. You will see the state data on the map with a default style (black with 100% opacity).
+设置图层样式
 
-{{
-  <AppropriateImage
-    imageId="choroplethStudioGlPt1StateDataBlack"
-    alt="Mapbox Studio state data with default fill-color style"
-  />
-}}
+在最原始的Leaflet地图上，数据样式是基于每个州的人口密度来生成的：
 
-You can rename a layer by clicking on the name of the layer at the top of the panel. Rename your new layer `statedata`.
+数据驱动样式
 
-## Style the layer
+在Mapbox Studio样式编辑器中，可以根据每个州的人口密度为其指定颜色。点击州数据图层的Style链接。接下来，点击Style across data range。
 
-On the original Leaflet map, the data is styled based on the population density of each state:
+在选择数值数据字段下，选择密度这个选项，因为想要根据每个州的人口密度来设置其样式。
+变化率是线性的。点击 Edit，然后选择Step。点击Done.。由于已将变化率设置为匀速，因此两个点之间的每个密度范围的颜色都将是统一的。
 
-{{
-  <AppropriateImage
-    imageId="choroplethStudioGlPt1LeafletChoropleth"
-    alt="original Leaflet choropleth map"
-  />
-}}
+现在是时候开始添加点和颜色了！您将创建几个点以将州划分成具有相似人口密度的组。点击第一个密度点中的Edit。根据您上传的数据中的信息，第一个点设定在1.264。点击它并将颜色更改为#FFEDA0。点击Done。
 
-### Data-driven styling
+将下一个点的密度更改为10，并将颜色更改为#FFEDA0。点击Done
 
-In the Mapbox Studio style editor, you can assign a color to each state based on its population density. Click the **Style** link in the `statedata` layer. Next, click **Style across data range**.
+点击+ Add another stop。将密度更改为20，并将颜色更改为#FED976。点击 Done。
 
-Under *Choose a numeric data field*, select `density` since you want to style each state according to its population density.
+创建以下附加的点：
+•	50: #FEB24C
+•	100: #FD8D3C
+•	200: #FC4E2A
+•	500: #E31A1C
+•	1000: #BD0026
 
-{{
-  <AppropriateImage
-    imageId="choroplethStudioGlPt1InterpolateFromData"
-    alt="Mapbox Studio style editor interpolate from data"
-  />
-}}
+当您开始添加点时，您将看到右侧的地图的变化以反映新点。在这种情况下，人口密度在0-10之间的所有州将被指定为 #FFEDA0颜色，人口密度在10-20之间的所有州将被指定为 #FED976颜色，依此类推。
 
-The rate of change is _linear_. Click **Edit** and select **Step** instead. Click **Done**. Since you have set the rate of change to step, the colors for each range of density between stops will be uniform.
+为你的州添加一个精致的轮廓样式并减少它们的不透明度，以帮助你的读者区分相邻的州。将不透明度更改为0.6。接下来，将1px stroke样式属性更改为 #FFF。
 
-{{
-  <AppropriateImage
-    imageId="choroplethStudioGlPt1DataSetRateChange"
-    alt="Mapbox Studio style editor set the rate of change to step"
-  />
-}}
 
-Now it's time to start adding stops and colors! You will create several stops to break states up into groups with similar population densities. Click on **Edit** in the first density stop. The first stop is fixed at _1.264_, based on the information in the data set you uploaded. Click on it and change the color to `#FFEDA0`. Click **Done**.
+重新排列图层
 
-Change *density* of the next stop to `10`, and change the color to `#FFEDA0` as well. Click **Done**.
+创建并设置图层样式后，您的地图应如下所示：
 
-{{
-  <AppropriateImage
-    imageId="choroplethStudioGlPt1SetFirstDensityStop"
-    alt="Mapbox Studio style editor set first density stop"
-  />
-}}
+一切看起来都不错，除了一件事 - 标签在数据层下面！Mapbox Studio样式编辑器最酷的一点是，您可以对地图的任意元素重新排序。这意味着您可以在您的数据上加上标签。
 
-Click **+ Add another stop**. Change *density* to `20`, and change the color to `#FED976`. Click **Done**.
+将鼠标悬停在您的州数据层上。在最左侧的图层列表中点击图层名称旁边的列表符号，然后将图层拖到标签下方。
 
-Create the following additional stops:
+现在，人口密度数据中的标签是最重要的，而城市标签则出现在更重要的州标签之上。若要关闭城市标签，请点击 Filter layers 并键入place.。这将返回所有城市标签层。按住command（Mac）或CTRL（Windows）同时点击这些层，可以同时选择多个层。接下来，单击层窗格顶部的按钮以关闭这些层的可见性。
 
-- `50`: `#FEB24C`
-- `100`: `#FD8D3C`
-- `200`: `#FC4E2A`
-- `500`: `#E31A1C`
-- `1000`: `#BD0026`
+要使州之间的边界更明显，可以将admin-state-province图层移动到图层列表中州数据图层的上方。
 
-{{
-  <AppropriateImage
-    imageId="choroplethStudioGlPt1SetAllDensityStops"
-    alt="Mapbox Studio style editor set colors for all density stops"
-  />
-}}
+发布样式
 
-As you start adding stops, you will see the map change on the right to reflect the new stops. In this case, all states with a population density between `0-10` will be assigned the color `#FFEDA0`, all states with population density from `10-20` will be assigned the color `#FED976`, and so on.
+现在你的地图看起来不错，是时候发布了！点击屏幕右上角的Publish按钮，然后在下一次提示中再次点击Publish。
 
-Give your states a fancy outline style and reduce their opacity to help your readers distinguish between neighboring states. Change the *Opacity* to `0.6`. Next, change the *1px stroke* style property to `#FFF`.
+哇哦！你的样式现在发布了！如果返回样式页，您将在列表顶部看到您的新样式。
 
-## Reorder your layers
+下一步
 
-After you've created and styled your layer, your map should look something like this:
-
-{{
-  <AppropriateImage
-    imageId="choroplethStudioGlPt1DataOnTop"
-    alt="screenshot of the choropleth map of the United States with custom data on top of place labels"
-  />
-}}
-
-Everything looks good, except for one thing - the labels are underneath the data layer! One of the coolest things about the Mapbox Studio style editor is that you can reorder any of the elements of the map. This means you can put labels on top of your data.
-
-Hover over your `statedata` layer. Click the {{<Icon name='menu' inline={true} />}} next to the layer's name in the layer list on the far left and drag your layer below the place labels.
-
-{{
-  <AppropriateImage
-    imageId="choroplethStudioGlPt1MoveStatedataLayer"
-    alt="Mapbox Studio style editor move statedata layer"
-  />
-}}
-
-Now that labels are on top of the population density data, city labels are popping out above the more important state labels. To turn off the city labels, click on **{{<Icon name='filter' inline={true} />}} Filter layers** and type _place_. This will return all the city label layers. Select multiple layers at once by holding down `command` (Mac) or `CTRL` (Windows) while clicking on these layers. Next, click the {{<Icon name='eye' inline={true} />}} button at the top of the layers pane to turn off these layers' visibility.
-
-{{
-  <AppropriateImage
-    imageId="choroplethStudioGlPt1HideLayers"
-    alt="hide layers in the Mapbox Studio style editor"
-  />
-}}
-
-To make the boundaries between states more visible, you can move the **admin-state-province** layer above the `statedata` layer in the layer list.
-
-{{
-  <AppropriateImage
-    imageId="choroplethStudioGlPt1MoveLayers"
-    alt="move layers in the Mapbox Studio style editor"
-  />
-}}
-
-## Publish the style
-
-Now that you've got your map looking good, it's time to publish! Click the **Publish** button in the top right of the screen, then click **Publish** again on the next prompt.
-
-Hooray! Your style is now published! If you go back to your Styles page, you will see your new style at the top of the list.
-
-## Next steps
-
-Head to [part 2](/help/tutorials/choropleth-studio-gl-pt-2/) to learn how add interactive elements to your map and publish it to the web with Mapbox GL JS.
+进入第2部分学习如何向地图添加交互元素，并使用Mapbox GL JS将其发布到Web。
